@@ -21,6 +21,9 @@ import {
   importCmd,
   statusCmd,
 } from "./commands/index.js";
+import { memoryCmd } from "./commands/memory.js";
+import { whoamiCmd } from "./commands/whoami.js";
+import { contextCmd } from "./commands/context.js";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -69,5 +72,24 @@ program
   .command("status")
   .description("Check if the local daemon is running")
   .action(statusCmd);
+
+program
+  .command("whoami")
+  .description("Show current identity info")
+  .action(whoamiCmd);
+
+program
+  .command("memory")
+  .description("Query and manage memories")
+  .option("-q, --query <query>", "Search query")
+  .option("-l, --limit <limit>", "Max results", "20")
+  .action(memoryCmd);
+
+program
+  .command("context")
+  .description("Manage current context")
+  .option("-s, --set <activity>", "Set current activity")
+  .option("-l, --list", "List active contexts")
+  .action(contextCmd);
 
 program.parse(process.argv);
