@@ -18,6 +18,7 @@ import { createContextRouter } from "./routes/context.js";
 import { createRelationshipRouter } from "./routes/relationships.js";
 import { createPreferenceRouter } from "./routes/preferences.js";
 import { createSyncRouter } from "./routes/sync.js";
+import { versionRouter } from "./routes/version.js";
 import { createAuthMiddleware } from "./middleware/auth.js";
 import { rateLimiter } from "./middleware/rate-limit.js";
 import { requestLogger } from "./middleware/logger.js";
@@ -60,6 +61,7 @@ export function createServer(config: Partial<ServerConfig> = {}) {
   app.route("/", createRelationshipRouter(storage));
   app.route("/", createPreferenceRouter(storage));
   app.route("/", createSyncRouter());
+  app.route("/", versionRouter);
 
   // 404
   app.notFound(notFoundHandler);
