@@ -24,6 +24,7 @@ import {
 import { memoryCmd } from "./commands/memory.js";
 import { whoamiCmd } from "./commands/whoami.js";
 import { contextCmd } from "./commands/context.js";
+import { configCmd } from "./commands/config.js";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -91,5 +92,13 @@ program
   .option("-s, --set <activity>", "Set current activity")
   .option("-l, --list", "List active contexts")
   .action(contextCmd);
+
+program
+  .command("config")
+  .description("View and manage configuration")
+  .option("-g, --get <key>", "Get config value (dot notation)")
+  .option("-s, --set <key>", "Set config value")
+  .option("-v, --value <value>", "Value to set")
+  .action(configCmd);
 
 program.parse(process.argv);
