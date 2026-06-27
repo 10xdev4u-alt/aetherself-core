@@ -18,6 +18,8 @@ import { createContextRouter } from "./routes/context.js";
 import { createRelationshipRouter } from "./routes/relationships.js";
 import { createPreferenceRouter } from "./routes/preferences.js";
 import { createAuthMiddleware } from "./middleware/auth.js";
+import { rateLimiter } from "./middleware/rate-limit.js";
+import { requestLogger } from "./middleware/logger.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.js";
 
 export interface ServerConfig {
@@ -42,6 +44,8 @@ export function createServer(config: Partial<ServerConfig> = {}) {
 
   // Middleware
   app.use("*", cors());
+  app.use("*", requestLogger);
+  app.use("*", rateLimiter);
   app.use("*", errorHandler);
   app.use("*", createAuthMiddleware(storage));
 
