@@ -29,6 +29,7 @@ import { backupCmd } from "./commands/backup.js";
 import { keysCmd } from "./commands/keys.js";
 import { recoveryCmd } from "./commands/recovery.js";
 import { versionCmd } from "./commands/version.js";
+import { schemaCmd } from "./commands/schema.js";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -125,5 +126,11 @@ program
   .command("version")
   .description("Show version info")
   .action(versionCmd);
+
+program
+  .command("schema")
+  .description("Export JSON schemas")
+  .option("-o, --output <file>", "Output file path")
+  .action(schemaCmd);
 
 program.parse(process.argv);
