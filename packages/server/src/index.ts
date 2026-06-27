@@ -61,6 +61,7 @@ export function createServer(config: Partial<ServerConfig> = {}) {
   app.route("/", createRelationshipRouter(storage));
   app.route("/", createPreferenceRouter(storage));
   app.route("/", createSyncRouter());
+  app.route("/", createAdminRouter(storage));
   app.route("/", versionRouter);
 
   // 404
