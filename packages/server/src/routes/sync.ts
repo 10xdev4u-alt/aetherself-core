@@ -16,3 +16,4 @@ export function createSyncRouter(): Hono {
 
   return router;
 }
+// ponytail: placeholder for future Yjs sync
