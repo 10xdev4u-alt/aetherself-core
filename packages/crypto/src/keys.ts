@@ -2,10 +2,10 @@
  * AetherSelf — key generation and management.
  *
  * Users are identified by an Ed25519 key pair.
- * The public key becomes their DID: did:aetherself:<base58(publicKey)>
+ * The public key becomes their DID: did:aetherself:<base64url(publicKey)>
  */
 
-import sodium from "libsodium-wrappers";
+import sodium from "./sodium.js";
 
 export interface KeyPair {
   publicKey: Uint8Array;
@@ -27,25 +27,25 @@ export async function generateKeyPair(): Promise<KeyPair> {
 }
 
 /**
- * Encode a public key as a base58 string for DID creation.
+ * Encode a public key as a base64url string for DID creation.
  */
 export function encodePublicKey(publicKey: Uint8Array): string {
-  return sodium.to_base58(publicKey);
+  return sodium.to_base64(publicKey);
 }
 
 /**
- * Decode a base58-encoded public key back to bytes.
+ * Decode a base64url-encoded public key back to bytes.
  */
 export function decodePublicKey(encoded: string): Uint8Array {
-  return sodium.from_base58(encoded);
+  return sodium.from_base64(encoded);
 }
 
 /**
  * Derive a DID string from a public key.
  */
 export function publicKeyToDid(publicKey: Uint8Array): string {
-  const b58 = encodePublicKey(publicKey);
-  return `did:aetherself:${b58}`;
+  const b64 = encodePublicKey(publicKey);
+  return `did:aetherself:${b64}`;
 }
 
 /**
@@ -56,13 +56,13 @@ export function didToPublicKey(did: string): Uint8Array {
   if (!did.startsWith(prefix)) {
     throw new Error(`Invalid DID: ${did}`);
   }
-  const b58 = did.slice(prefix.length);
-  return decodePublicKey(b58);
+  const b64 = did.slice(prefix.length);
+  return decodePublicKey(b64);
 }
 
 /**
  * Sign a message with a private key (Ed25519).
- * Returns the signature as a base58 string.
+ * Returns the signature as a base64 string.
  */
 export async function sign(
   message: Uint8Array,
@@ -70,7 +70,7 @@ export async function sign(
 ): Promise<string> {
   await sodium.ready;
   const signature = sodium.crypto_sign_detached(message, privateKey);
-  return sodium.to_base58(signature);
+  return sodium.to_base64(signature);
 }
 
 /**
@@ -82,6 +82,6 @@ export async function verify(
   publicKey: Uint8Array,
 ): Promise<boolean> {
   await sodium.ready;
-  const sigBytes = sodium.from_base58(signature);
+  const sigBytes = sodium.from_base64(signature);
   return sodium.crypto_sign_verify_detached(sigBytes, message, publicKey);
 }

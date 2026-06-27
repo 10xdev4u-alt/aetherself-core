@@ -5,7 +5,7 @@
  * Every field in the identity graph is encrypted with this.
  */
 
-import sodium from "libsodium-wrappers";
+import sodium from "./sodium.js";
 
 export interface EncryptedPayload {
   /** Base64-encoded ciphertext */
