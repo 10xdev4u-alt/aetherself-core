@@ -167,3 +167,71 @@ describe("identity CRUD", () => {
     expect(results[0]?.content).toBe("User loves building AI tools");
   });
 });
+
+describe("context", () => {
+  let token: string;
+
+  beforeAll(async () => {
+    const encodedPubKey = encodePublicKey(keyPair.publicKey);
+    const hello = (await (await request("POST", "/v1/auth/hello", {
+      body: { publicKey: encodedPubKey },
+    })).json()) as Record<string, string>;
+
+    const message = new TextEncoder().encode(hello.nonce ?? "");
+    const signature = await sign(message, keyPair.privateKey);
+
+    const sess = (await (await request("POST", "/v1/auth/response", {
+      body: { challengeId: hello.challengeId, nonce: hello.nonce, signature },
+    })).json()) as Record<string, string>;
+    token = sess.token ?? "";
+  });
+
+  it("creates context", async () => {
+    const res = await request("POST", "/v1/context", {
+      token,
+      body: { activity: "coding", platform: "vscode" },
+    });
+    expect(res.status).toBe(201);
+  });
+
+  it("lists contexts", async () => {
+    const res = await request("GET", "/v1/context", { token });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect((body.contexts as unknown[]).length).toBeGreaterThan(0);
+  });
+});
+
+describe("relationships", () => {
+  let token: string;
+
+  beforeAll(async () => {
+    const encodedPubKey = encodePublicKey(keyPair.publicKey);
+    const hello = (await (await request("POST", "/v1/auth/hello", {
+      body: { publicKey: encodedPubKey },
+    })).json()) as Record<string, string>;
+
+    const message = new TextEncoder().encode(hello.nonce ?? "");
+    const signature = await sign(message, keyPair.privateKey);
+
+    const sess = (await (await request("POST", "/v1/auth/response", {
+      body: { challengeId: hello.challengeId, nonce: hello.nonce, signature },
+    })).json()) as Record<string, string>;
+    token = sess.token ?? "";
+  });
+
+  it("creates relationship", async () => {
+    const res = await request("POST", "/v1/relationships", {
+      token,
+      body: { entityId: "did:aetherself:friend123", entityName: "Best Friend", type: "person", strength: 0.9 },
+    });
+    expect(res.status).toBe(201);
+  });
+
+  it("lists relationships", async () => {
+    const res = await request("GET", "/v1/relationships", { token });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect((body.relationships as unknown[]).length).toBeGreaterThan(0);
+  });
+});
