@@ -46,6 +46,16 @@ afterAll(() => {
   }
 });
 
+describe("health", () => {
+  it("returns ok status", async () => {
+    const res = await request("GET", "/health");
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.status).toBe("ok");
+    expect(body.uptime).toBeTypeOf("number");
+  });
+});
+
 describe("well-known", () => {
   it("returns protocol info", async () => {
     const res = await request("GET", "/.well-known/aetherself");
