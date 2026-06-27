@@ -235,3 +235,40 @@ describe("relationships", () => {
     expect((body.relationships as unknown[]).length).toBeGreaterThan(0);
   });
 });
+
+describe("preferences", () => {
+  let token: string;
+
+  beforeAll(async () => {
+    const encodedPubKey = encodePublicKey(keyPair.publicKey);
+    const hello = (await (await request("POST", "/v1/auth/hello", {
+      body: { publicKey: encodedPubKey },
+    })).json()) as Record<string, string>;
+    const message = new TextEncoder().encode(hello.nonce ?? "");
+    const signature = await sign(message, keyPair.privateKey);
+    const sess = (await (await request("POST", "/v1/auth/response", {
+      body: { challengeId: hello.challengeId, nonce: hello.nonce, signature },
+    })).json()) as Record<string, string>;
+    token = sess.token ?? "";
+  });
+
+  it("creates preference", async () => {
+    const res = await request("POST", "/v1/preferences", {
+      token,
+      body: { key: "theme", value: "dark", category: "ui" },
+    });
+    expect(res.status).toBe(201);
+  });
+
+  it("lists preferences", async () => {
+    const res = await request("GET", "/v1/preferences", { token });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect((body.preferences as unknown[]).length).toBeGreaterThan(0);
+  });
+
+  it("filters by category", async () => {
+    const res = await request("GET", "/v1/preferences?category=ui", { token });
+    expect(res.status).toBe(200);
+  });
+});
