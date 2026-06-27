@@ -28,6 +28,7 @@ import { configCmd } from "./commands/config.js";
 import { backupCmd } from "./commands/backup.js";
 import { keysCmd } from "./commands/keys.js";
 import { recoveryCmd } from "./commands/recovery.js";
+import { versionCmd } from "./commands/version.js";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -119,5 +120,10 @@ program
   .command("recovery")
   .description("Show recovery phrase")
   .action(recoveryCmd);
+
+program
+  .command("version")
+  .description("Show version info")
+  .action(versionCmd);
 
 program.parse(process.argv);
