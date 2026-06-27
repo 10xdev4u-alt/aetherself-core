@@ -6,7 +6,7 @@
  */
 
 import { DatabaseSync } from "node:sqlite";
-import type { Did, Memory, ContextFrame, Relationship } from "@aetherself/protocol";
+import type { Did, Memory, ContextFrame, Relationship, Preference } from "@aetherself/protocol";
 
 interface IdentityRow {
   did: string;
@@ -85,6 +85,17 @@ export class Storage {
       );
 
       CREATE INDEX IF NOT EXISTS idx_relationships_did ON relationships(did);
+
+      CREATE TABLE IF NOT EXISTS preferences (
+        did TEXT NOT NULL,
+        key TEXT NOT NULL,
+        value TEXT NOT NULL,
+        category TEXT,
+        updated_at INTEGER NOT NULL,
+        PRIMARY KEY (did, key)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_preferences_did ON preferences(did);
     `);
   }
 
@@ -262,6 +273,38 @@ export class Storage {
 
   deleteRelationship(did: Did, id: string): void {
     this.db.prepare("DELETE FROM relationships WHERE did = ? AND id = ?").run(did, id);
+  }
+
+  // ─── Preferences ────────────────────────────────────────
+
+  upsertPreference(did: Did, pref: Preference): void {
+    this.db.prepare(`
+      INSERT INTO preferences (did, key, value, category, updated_at)
+      VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT(did, key) DO UPDATE SET
+        value = excluded.value,
+        category = excluded.category,
+        updated_at = excluded.updated_at
+    `).run(did, pref.key, String(pref.value), pref.category ?? null, pref.updatedAt);
+  }
+
+  getPreferences(did: Did, category?: string | null): Preference[] {
+    const sql = category
+      ? "SELECT * FROM preferences WHERE did = ? AND category = ? ORDER BY key"
+      : "SELECT * FROM preferences WHERE did = ? ORDER BY key";
+    const rows = category
+      ? this.db.prepare(sql).all(did, category) as Array<Record<string, unknown>>
+      : this.db.prepare(sql).all(did) as Array<Record<string, unknown>>;
+    return rows.map(r => ({
+      key: r.key as string,
+      value: r.value as string,
+      category: r.category as string | undefined,
+      updatedAt: r.updated_at as number,
+    }));
+  }
+
+  deletePreference(did: Did, key: string): void {
+    this.db.prepare("DELETE FROM preferences WHERE did = ? AND key = ?").run(did, key);
   }
 
   // ─── Context ─────────────────────────────────────────────
