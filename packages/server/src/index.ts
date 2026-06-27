@@ -14,6 +14,7 @@ import { healthRouter } from "./routes/health.js";
 import { createAuthRouter } from "./routes/auth.js";
 import { createIdentityRouter } from "./routes/identity.js";
 import { createMemoryRouter } from "./routes/memory.js";
+import { createContextRouter } from "./routes/context.js";
 import { createAuthMiddleware } from "./middleware/auth.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.js";
 
@@ -48,6 +49,7 @@ export function createServer(config: Partial<ServerConfig> = {}) {
   app.route("/", createAuthRouter(storage));
   app.route("/", createIdentityRouter(storage));
   app.route("/", createMemoryRouter(storage));
+  app.route("/", createContextRouter(storage));
 
   // 404
   app.notFound(notFoundHandler);

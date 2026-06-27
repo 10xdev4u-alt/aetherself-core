@@ -6,7 +6,7 @@
  */
 
 import { DatabaseSync } from "node:sqlite";
-import type { Did, Memory } from "@aetherself/protocol";
+import type { Did, Memory, ContextFrame } from "@aetherself/protocol";
 
 interface IdentityRow {
   did: string;
@@ -58,6 +58,20 @@ export class Storage {
       CREATE INDEX IF NOT EXISTS idx_memories_did ON memories(did);
       CREATE INDEX IF NOT EXISTS idx_sessions_did ON sessions(did);
       CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
+
+      CREATE TABLE IF NOT EXISTS contexts (
+        id TEXT PRIMARY KEY,
+        did TEXT NOT NULL,
+        activity TEXT NOT NULL,
+        platform TEXT,
+        app_id TEXT,
+        started_at INTEGER NOT NULL,
+        expires_at INTEGER,
+        metadata TEXT NOT NULL DEFAULT '{}',
+        updated_at INTEGER NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_contexts_did ON contexts(did);
     `);
   }
 
@@ -166,6 +180,41 @@ export class Storage {
       source: row.source ?? undefined,
       importance: row.importance,
     }));
+  }
+
+  // ─── Context ─────────────────────────────────────────────
+
+  upsertContext(did: Did, ctx: ContextFrame): void {
+    const now = Date.now();
+    const stmt = this.db.prepare(`
+      INSERT INTO contexts (id, did, activity, platform, app_id, started_at, expires_at, metadata, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        activity = excluded.activity,
+        platform = excluded.platform,
+        app_id = excluded.app_id,
+        expires_at = excluded.expires_at,
+        metadata = excluded.metadata,
+        updated_at = excluded.updated_at
+    `);
+    stmt.run(ctx.id, did, ctx.activity, ctx.platform ?? null, ctx.appId ?? null, ctx.startedAt, ctx.expiresAt ?? null, JSON.stringify(ctx.metadata ?? {}), now);
+  }
+
+  getContexts(did: Did): ContextFrame[] {
+    const rows = this.db.prepare("SELECT * FROM contexts WHERE did = ? AND (expires_at IS NULL OR expires_at > ?) ORDER BY started_at DESC").all(did, Date.now()) as Array<Record<string, unknown>>;
+    return rows.map(r => ({
+      id: r.id as string,
+      activity: r.activity as string,
+      platform: r.platform as string | undefined,
+      appId: r.app_id as string | undefined,
+      startedAt: r.started_at as number,
+      expiresAt: r.expires_at as number | undefined,
+      metadata: JSON.parse(r.metadata as string ?? "{}"),
+    }));
+  }
+
+  deleteContext(did: Did, id: string): void {
+    this.db.prepare("DELETE FROM contexts WHERE did = ? AND id = ?").run(did, id);
   }
 
   // ─── Maintenance ─────────────────────────────────────────
