@@ -27,6 +27,7 @@ import { contextCmd } from "./commands/context.js";
 import { configCmd } from "./commands/config.js";
 import { backupCmd } from "./commands/backup.js";
 import { keysCmd } from "./commands/keys.js";
+import { recoveryCmd } from "./commands/recovery.js";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -113,5 +114,10 @@ program
   .command("keys")
   .description("Show key information")
   .action(keysCmd);
+
+program
+  .command("recovery")
+  .description("Show recovery phrase")
+  .action(recoveryCmd);
 
 program.parse(process.argv);
