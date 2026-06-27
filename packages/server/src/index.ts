@@ -15,6 +15,7 @@ import { createAuthRouter } from "./routes/auth.js";
 import { createIdentityRouter } from "./routes/identity.js";
 import { createMemoryRouter } from "./routes/memory.js";
 import { createContextRouter } from "./routes/context.js";
+import { createRelationshipRouter } from "./routes/relationships.js";
 import { createAuthMiddleware } from "./middleware/auth.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.js";
 
@@ -50,6 +51,7 @@ export function createServer(config: Partial<ServerConfig> = {}) {
   app.route("/", createIdentityRouter(storage));
   app.route("/", createMemoryRouter(storage));
   app.route("/", createContextRouter(storage));
+  app.route("/", createRelationshipRouter(storage));
 
   // 404
   app.notFound(notFoundHandler);

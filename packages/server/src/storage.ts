@@ -6,7 +6,7 @@
  */
 
 import { DatabaseSync } from "node:sqlite";
-import type { Did, Memory, ContextFrame } from "@aetherself/protocol";
+import type { Did, Memory, ContextFrame, Relationship } from "@aetherself/protocol";
 
 interface IdentityRow {
   did: string;
@@ -72,6 +72,19 @@ export class Storage {
       );
 
       CREATE INDEX IF NOT EXISTS idx_contexts_did ON contexts(did);
+
+      CREATE TABLE IF NOT EXISTS relationships (
+        id TEXT PRIMARY KEY,
+        did TEXT NOT NULL,
+        entity_id TEXT NOT NULL,
+        entity_name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        strength REAL NOT NULL DEFAULT 0.5,
+        context TEXT,
+        updated_at INTEGER NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_relationships_did ON relationships(did);
     `);
   }
 
@@ -217,7 +230,41 @@ export class Storage {
     this.db.prepare("DELETE FROM contexts WHERE did = ? AND id = ?").run(did, id);
   }
 
-  // ─── Maintenance ─────────────────────────────────────────
+  // ─── Relationships ───────────────────────────────────────
+
+  upsertRelationship(did: Did, rel: Relationship): void {
+    const now = Date.now();
+    this.db.prepare(`
+      INSERT INTO relationships (id, did, entity_id, entity_name, type, strength, context, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        entity_id = excluded.entity_id,
+        entity_name = excluded.entity_name,
+        type = excluded.type,
+        strength = excluded.strength,
+        context = excluded.context,
+        updated_at = excluded.updated_at
+    `).run(rel.id, did, rel.entityId, rel.entityName, rel.type, rel.strength, rel.context ?? null, now);
+  }
+
+  getRelationships(did: Did): Relationship[] {
+    const rows = this.db.prepare("SELECT * FROM relationships WHERE did = ? ORDER BY strength DESC").all(did) as Array<Record<string, unknown>>;
+    return rows.map(r => ({
+      id: r.id as string,
+      entityId: r.entity_id as string,
+      entityName: r.entity_name as string,
+      type: r.type as Relationship["type"],
+      strength: r.strength as number,
+      context: r.context as string | undefined,
+      updatedAt: r.updated_at as number,
+    }));
+  }
+
+  deleteRelationship(did: Did, id: string): void {
+    this.db.prepare("DELETE FROM relationships WHERE did = ? AND id = ?").run(did, id);
+  }
+
+  // ─── Context ─────────────────────────────────────────────
 
   close(): void {
     this.db.close();
