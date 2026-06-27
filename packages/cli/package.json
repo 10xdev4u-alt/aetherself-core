@@ -1,0 +1,26 @@
+{
+  "name": "@aetherself/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "AetherSelf CLI — manage your AI identity from the terminal",
+  "bin": {
+    "aetherself": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check src/",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@aetherself/protocol": "workspace:*",
+    "@aetherself/crypto": "workspace:*",
+    "@aetherself/server": "workspace:*",
+    "commander": "^13.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "@types/node": "^22.0.0"
+  }
+}

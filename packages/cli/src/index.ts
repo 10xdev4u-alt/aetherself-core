@@ -1,0 +1,73 @@
+#!/usr/bin/env node
+
+/**
+ * AetherSelf CLI — Manage your AI identity from the terminal.
+ *
+ * Usage:
+ *   aetherself init         Create a new identity
+ *   aetherself serve        Start the local daemon
+ *   aetherself identity     Show current identity
+ *   aetherself export       Export identity as JSON
+ *   aetherself import       Import identity from JSON
+ *   aetherself status       Check daemon status
+ */
+
+import { Command } from "commander";
+import {
+  initCmd,
+  serveCmd,
+  identityCmd,
+  exportCmd,
+  importCmd,
+  statusCmd,
+} from "./commands/index.js";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const pkg = require("../package.json") as { version: string };
+
+const program = new Command();
+
+program
+  .name("aetherself")
+  .description("Your AI Identity Layer — portable, encrypted, user-owned")
+  .version(pkg.version);
+
+program
+  .command("init")
+  .description("Create a new AetherSelf identity (generates key pair)")
+  .option("-p, --password <password>", "Protect identity with password")
+  .action(initCmd);
+
+program
+  .command("serve")
+  .description("Start the local AetherSelf daemon")
+  .option("-p, --port <port>", "Port to listen on", "4197")
+  .option("--db <path>", "Path to SQLite database", "./aetherself.db")
+  .option("--host <host>", "Host to bind to", "127.0.0.1")
+  .action(serveCmd);
+
+program
+  .command("identity")
+  .description("Show current identity information")
+  .option("--did-only", "Print only the DID")
+  .action(identityCmd);
+
+program
+  .command("export")
+  .description("Export identity as encrypted JSON")
+  .option("-o, --output <file>", "Output file path", "aetherself-export.json")
+  .action(exportCmd);
+
+program
+  .command("import")
+  .description("Import identity from encrypted JSON")
+  .argument("<file>", "Path to the export file")
+  .action(importCmd);
+
+program
+  .command("status")
+  .description("Check if the local daemon is running")
+  .action(statusCmd);
+
+program.parse(process.argv);
