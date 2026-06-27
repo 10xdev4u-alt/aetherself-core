@@ -12,7 +12,7 @@ import { z } from "zod";
 /** `did:aetherself:<base58(publicKey)>` */
 export const didSchema = z
   .string()
-  .regex(/^did:aetherself:[1-9A-HJ-NP-Za-km-z]{32,44}$/);
+  .regex(/^did:aetherself:[A-Za-z0-9+\/=_-]{20,100}$/);
 
 export type Did = z.infer<typeof didSchema>;
 

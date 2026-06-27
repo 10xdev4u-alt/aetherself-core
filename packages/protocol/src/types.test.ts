@@ -12,7 +12,7 @@ import {
 
 describe("did validation", () => {
   it("accepts valid DIDs", () => {
-    const valid = "did:aetherself:abc123def456ghi789jkl012mno345pqr678stu901";
+    const valid = "did:aetherself:abc123def456ghi789jkl012mno345pqr";
     expect(didSchema.safeParse(valid).success).toBe(true);
   });
 
@@ -23,7 +23,7 @@ describe("did validation", () => {
   });
 
   it("creates a DID and extracts the key", () => {
-    const key = "AbCdEfGhIjKlMnOpQrStUvWxYz1234567890";
+    const key = "AbCdEfGhIjKlMnOpQrStUvWxYz123456";
     const did = createDid(key);
     expect(did).toBe(`did:aetherself:${key}`);
     expect(parseDid(did)).toBe(key);
@@ -95,7 +95,7 @@ describe("memory", () => {
 describe("aetherself graph", () => {
   it("accepts a minimal self", () => {
     const result = aetherSelfSchema.safeParse({
-      did: "did:aetherself:abc123def456ghi789jkl012mno345pqr678stu901",
+      did: "did:aetherself:abc123def456ghi789jkl012mno345pqr",
       updatedAt: Date.now(),
       createdAt: Date.now(),
     });
@@ -105,7 +105,7 @@ describe("aetherself graph", () => {
   it("accepts a complete self with all fields", () => {
     const now = Date.now();
     const result = aetherSelfSchema.safeParse({
-      did: "did:aetherself:abc123def456ghi789jkl012mno345pqr678stu901",
+      did: "did:aetherself:abc123def456ghi789jkl012mno345pqr",
       identity: { name: "Test User", language: "en" },
       preferences: [
         { key: "theme", value: "dark", updatedAt: now },
@@ -150,7 +150,7 @@ describe("aetherself graph", () => {
 
   it("provides defaults for empty fields", () => {
     const result = aetherSelfSchema.safeParse({
-      did: "did:aetherself:abc123def456ghi789jkl012mno345pqr678stu901",
+      did: "did:aetherself:abc123def456ghi789jkl012mno345pqr",
       updatedAt: Date.now(),
       createdAt: Date.now(),
     });
