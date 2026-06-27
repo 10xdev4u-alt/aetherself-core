@@ -10,6 +10,7 @@ import { serve } from "@hono/node-server";
 import { cors } from "hono/cors";
 import { Storage } from "./storage.js";
 import { wellKnownRouter } from "./routes/well-known.js";
+import { healthRouter } from "./routes/health.js";
 import { createAuthRouter } from "./routes/auth.js";
 import { createIdentityRouter } from "./routes/identity.js";
 import { createMemoryRouter } from "./routes/memory.js";
@@ -42,6 +43,7 @@ export function createServer(config: Partial<ServerConfig> = {}) {
   app.use("*", createAuthMiddleware(storage));
 
   // Routes
+  app.route("/", healthRouter);
   app.route("/", wellKnownRouter);
   app.route("/", createAuthRouter(storage));
   app.route("/", createIdentityRouter(storage));
