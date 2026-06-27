@@ -25,6 +25,8 @@ import { memoryCmd } from "./commands/memory.js";
 import { whoamiCmd } from "./commands/whoami.js";
 import { contextCmd } from "./commands/context.js";
 import { configCmd } from "./commands/config.js";
+import { backupCmd } from "./commands/backup.js";
+import { keysCmd } from "./commands/keys.js";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -100,5 +102,16 @@ program
   .option("-s, --set <key>", "Set config value")
   .option("-v, --value <value>", "Value to set")
   .action(configCmd);
+
+program
+  .command("backup")
+  .description("Export encrypted backup")
+  .option("-o, --output <file>", "Output file path")
+  .action(backupCmd);
+
+program
+  .command("keys")
+  .description("Show key information")
+  .action(keysCmd);
 
 program.parse(process.argv);
